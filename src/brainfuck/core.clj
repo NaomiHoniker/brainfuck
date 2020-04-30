@@ -24,8 +24,10 @@
   Whether the string contains whitespace is optional.
   "
   [first & rest]
-  ;; code goes here
-  nil
+  ;; Thank you to Trevor Amell for reminding me about macroexpand!
+  ;; I was stuck on this one for a while, and simply using macroexpand fixed my code...
+  (str first (if (not-empty rest) (macroexpand `(code-to-string ~@rest))))
+
   )
 
 (defmacro bf
