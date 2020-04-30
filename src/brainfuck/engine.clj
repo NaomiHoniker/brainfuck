@@ -19,7 +19,20 @@
   "
   [code]
   ;; Code goes here
-  nil
+  ;;(loop [line-num 1
+  ;           column-num 1
+  ;           token-vector []]
+  ;      (let [token ()]
+  ;        )
+  ;      )
+  (let [split-by-line (str/split-lines code)]
+    (map-indexed (fn [line-num line]
+                   (map-indexed (fn [col-num symbol]
+                                  (
+                                    assoc {} :symbol symbol :column (+ col-num 1)
+                                    )) line)
+                   ) split-by-line)
+    )
   )
 
 (defn find-matchings
