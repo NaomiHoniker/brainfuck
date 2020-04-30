@@ -26,12 +26,15 @@
   ;        )
   ;      )
   (let [split-by-line (str/split-lines code)]
-    (map-indexed (fn [line-num line]
-                   (map-indexed (fn [col-num symbol]
-                                  (
-                                    assoc {} :symbol symbol :column (+ col-num 1)
-                                    )) line)
-                   ) split-by-line)
+    ((comp vec flatten vector) (map-indexed (fn [line-num line]
+                                              (remove nil? (map-indexed (fn [col-num symbol]
+                                                                          (if (clojure.string/includes? "><+-.,*[]" (str symbol))
+                                                                            ;; If the symbol is valid Brainfuck symbols:
+                                                                            (assoc {} :symbol symbol :line (+ line-num 1) :column (+ col-num 1)
+                                                                                      )
+                                                                            ;; If not:
+                                                                            ;; do nothing
+                                                                            )) line))) split-by-line))
     )
   )
 
