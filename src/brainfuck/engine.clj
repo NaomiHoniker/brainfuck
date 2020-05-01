@@ -96,22 +96,23 @@
           ;; https://en.wikipedia.org/wiki/Brainfuck#Language_design
           ;;"increment the data pointer (to point to the next cell to the right)."
           (= symbol \>)
-            (recur (assoc data (inc-byte data-pointer) datum) (inc-byte data-pointer) (inc instruction-pointer))
+            (recur data (inc-byte data-pointer) (inc instruction-pointer))
 
           ;; "decrement the data pointer (to point to the next cell to the left)."
           (= symbol \<)
-            (recur (assoc data (dec-byte data-pointer) datum) (dec-byte data-pointer) (inc instruction-pointer))
+            (recur data (dec-byte data-pointer) (inc instruction-pointer))
 
           ;; "increment (increase by one) the byte at the data pointer."
           (= symbol \+)
-            (recur (assoc data data-pointer (inc-byte data)) data-pointer (inc instruction-pointer))
+            (recur (assoc data data-pointer (inc-byte datum)) data-pointer (inc instruction-pointer))
 
           ;; "decrement (decrease by one) the byte at the data pointer."
           (= symbol \-)
+            (recur (assoc data data-pointer (dec-byte datum)) data-pointer (inc instruction-pointer))
 
           ;; "output the byte at the data pointer."
           (= symbol \.)
-            (recur (print datum) data data-pointer (inc instruction-pointer))
+            (do (println (char datum)) (recur data data-pointer (inc instruction-pointer)))
 
           ;; "accept one byte of input, storing its value in the byte at the data pointer."
           (or (= symbol \,) (= symbol \*))
@@ -122,9 +123,23 @@
           ;; "if the byte at the data pointer is zero, then instead of moving the instruction
           ;; pointer forward to the next command, jump it forward to the command after the matching ] command."
           (= symbol \[)
+            (if (= datum 0)
+              ;; If the byte at the data pointer is zero...
+              (let [jump-point (get matchings instruction-pointer)]
+                (recur data data-pointer jump-point))
+              ;; Otherwise...
+              (recur data data-pointer (inc instruction-pointer))
+              )
 
           ;; "if the byte at the data pointer is nonzero, then instead of moving the instruction
           ;; pointer forward to the next command, jump it back to the command after the matching [ command."
           (= symbol \])
+            (if (not= datum 0)
+              ;; If the byte at the data pointer is zero...
+              (let [jump-point (get matchings instruction-pointer)]
+                (recur data data-pointer jump-point))
+              ;; Otherwise...
+              (recur data data-pointer (inc instruction-pointer))
+              )
 
           :else (recur data data-pointer (inc instruction-pointer)))))))
