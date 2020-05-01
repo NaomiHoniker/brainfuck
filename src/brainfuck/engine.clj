@@ -112,7 +112,7 @@
 
           ;; "output the byte at the data pointer."
           (= symbol \.)
-            (do (println (char datum)) (recur data data-pointer (inc instruction-pointer)))
+            (do (print (char datum)) (recur data data-pointer (inc instruction-pointer)))
 
           ;; "accept one byte of input, storing its value in the byte at the data pointer."
           (or (= symbol \,) (= symbol \*))
