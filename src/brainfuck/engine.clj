@@ -18,18 +18,16 @@
   valid (augmented) brainfuck symbols: > < + - . , * [ ]
   "
   [code]
-  ;; Code goes here
-  ;;(loop [line-num 1
-  ;           column-num 1
-  ;           token-vector []]
-  ;      (let [token ()]
-  ;        )
-  ;      )
+  ;; Split the code by newlines
   (let [split-by-line (str/split-lines code)]
+    ;; Comp vec flatten vector will flatten the map-indexed's sequences into a vector.
     ((comp vec flatten vector) (map-indexed (fn [line-num line]
+                                              ;; Remove all invalid symbols, which will be added as nil, then
+                                              ;; map-index to run through each character of each line.
                                               (remove nil? (map-indexed (fn [col-num symbol]
                                                                           (if (clojure.string/includes? "><+-.,*[]" (str symbol))
                                                                             ;; If the symbol is valid Brainfuck symbols:
+                                                                            ;; Add the symbol, line number, and column number to the map.
                                                                             (assoc {} :symbol symbol :line (+ line-num 1) :column (+ col-num 1)
                                                                                       )
                                                                             ;; If not:
@@ -95,12 +93,38 @@
         (cond 
           ;; Code goes here
           
-          ;; you implement other cases
-          
-          ;; we are providing the input case for you
+          ;; https://en.wikipedia.org/wiki/Brainfuck#Language_design
+          ;;"increment the data pointer (to point to the next cell to the right)."
+          (= symbol \>)
+            (recur (assoc data (inc-byte data-pointer) datum) (inc-byte data-pointer) (inc instruction-pointer))
+
+          ;; "decrement the data pointer (to point to the next cell to the left)."
+          (= symbol \<)
+            (recur (assoc data (dec-byte data-pointer) datum) (dec-byte data-pointer) (inc instruction-pointer))
+
+          ;; "increment (increase by one) the byte at the data pointer."
+          (= symbol \+)
+            (recur (assoc data data-pointer (inc-byte data)) data-pointer (inc instruction-pointer))
+
+          ;; "decrement (decrease by one) the byte at the data pointer."
+          (= symbol \-)
+
+          ;; "output the byte at the data pointer."
+          (= symbol \.)
+            (recur (print datum) data data-pointer (inc instruction-pointer))
+
+          ;; "accept one byte of input, storing its value in the byte at the data pointer."
           (or (= symbol \,) (= symbol \*))
             ;; accept one byte of input, storing its value in the byte at the data pointer. 
             (let [input (.read *in*)]
               (recur (assoc data data-pointer input) data-pointer (inc instruction-pointer)))
+
+          ;; "if the byte at the data pointer is zero, then instead of moving the instruction
+          ;; pointer forward to the next command, jump it forward to the command after the matching ] command."
+          (= symbol \[)
+
+          ;; "if the byte at the data pointer is nonzero, then instead of moving the instruction
+          ;; pointer forward to the next command, jump it back to the command after the matching [ command."
+          (= symbol \])
 
           :else (recur data data-pointer (inc instruction-pointer)))))))

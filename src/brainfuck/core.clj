@@ -26,6 +26,7 @@
   [first & rest]
   ;; Thank you to Trevor Amell for reminding me about macroexpand!
   ;; I was stuck on this one for a while, and simply using macroexpand fixed my code...
+  ;; Recursively adds the first character in a line to a string until the 'rest' is empty
   (str first (if (not-empty rest) (macroexpand `(code-to-string ~@rest))))
 
   )
